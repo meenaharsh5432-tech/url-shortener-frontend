@@ -264,7 +264,7 @@ function Dashboard() {
       {/* Footer */}
 <footer style={styles.footer}>
   <p style={styles.footerText}>
-    © {new Date().getFullYear()} cuts.ink — Made  by <span style={styles.footerName}>Harsh</span>
+    © {new Date().getFullYear()} cuts.ink — Made  by <span style={styles.footerName}>devraj hi khede....</span>
   </p>
 </footer>
     </div>
