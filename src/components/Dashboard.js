@@ -261,6 +261,12 @@ function Dashboard() {
           )}
         </div>
       </div>
+      {/* Footer */}
+<footer style={styles.footer}>
+  <p style={styles.footerText}>
+    © {new Date().getFullYear()} cuts.ink — Made with ❤️ by <span style={styles.footerName}>Harsh</span>
+  </p>
+</footer>
     </div>
   )
 }
@@ -432,7 +438,24 @@ const styles = {
   deleteBtn: {
     backgroundColor: 'rgba(239,68,68,0.1)',
     borderColor: 'rgba(239,68,68,0.2)'
-  }
+  },
+  footer: {
+  textAlign: 'center',
+  padding: '24px',
+  borderTop: '1px solid rgba(255,255,255,0.05)',
+  marginTop: '20px',
+  position: 'relative',
+  zIndex: 1
+},
+footerText: {
+  color: '#4b5563',
+  fontSize: '13px',
+  margin: 0
+},
+footerName: {
+  color: '#8b5cf6',
+  fontWeight: '600'
+}
 }
 
 export default Dashboard
