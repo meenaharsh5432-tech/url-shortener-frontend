@@ -15,7 +15,7 @@ function Register() {
     setLoading(true)
     setError('')
     try {
-      await axios.post('${API_URL}/auth/login/auth/register', {
+      await axios.post(`${API_URL}/auth/login/auth/register`, {
         username,
         email,
         password

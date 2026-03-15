@@ -33,7 +33,7 @@ function Dashboard() {
 
   const fetchUrls = async () => {
     try {
-      const res = await axios.get('${API_URL}/auth/login', { headers })
+      const res = await axios.get(`${API_URL}/auth/login`, { headers })
       setUrls(res.data)
     } catch (err) {
       console.log('Error fetching URLs')
@@ -45,7 +45,7 @@ function Dashboard() {
     setLoading(true)
     setError('')
     try {
-      const res = await axios.post('${API_URL}/auth/login',
+      const res = await axios.post(`${API_URL}/auth/login`,
         { originalUrl,customAlias,password },
         { headers }
       )
