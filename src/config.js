@@ -1,3 +1,3 @@
-const API_URL = 'https://url-shortener-backend-9agq.onrender.com'
+const API_URL = 'https://api.cuts.ink'
 
 export default API_URL
