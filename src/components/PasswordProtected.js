@@ -13,7 +13,7 @@ function PasswordProtected() {
     setLoading(true)
     setError('')
     try {
-      const res = await axios.post(`${API_URL}/auth/login/verify/${code}`, {
+      const res = await axios.post(`https://url-shortener-backend-9agq.onrender.com/verify/${code}`, {
         password
       })
       // Redirect to original URL
