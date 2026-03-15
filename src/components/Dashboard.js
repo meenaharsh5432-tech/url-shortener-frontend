@@ -175,6 +175,9 @@ function Dashboard() {
                     borderRadius: '8px',
                     color: '#fff'
                   }}
+                  labelStyle={{ color: '#9ca3af' }}
+  itemStyle={{ color: '#8b5cf6' }}
+  cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                 />
                 <Bar dataKey="clicks" fill="url(#barGradient)" radius={[6, 6, 0, 0]} />
                 <defs>
