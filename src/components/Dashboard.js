@@ -3,6 +3,7 @@ import axios from 'axios'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
+import API_URL from '../config'
 
 
 function Dashboard() {
@@ -32,7 +33,7 @@ function Dashboard() {
 
   const fetchUrls = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/myurls', { headers })
+      const res = await axios.get('${API_URL}/auth/login', { headers })
       setUrls(res.data)
     } catch (err) {
       console.log('Error fetching URLs')
@@ -44,7 +45,7 @@ function Dashboard() {
     setLoading(true)
     setError('')
     try {
-      const res = await axios.post('http://localhost:5000/shorten',
+      const res = await axios.post('${API_URL}/auth/login',
         { originalUrl,customAlias,password },
         { headers }
       )
@@ -60,7 +61,7 @@ function Dashboard() {
 
   const handleDelete=async (id)=>{
     try {
-      await axios.delete(`http://localhost:5000/${id}`,{headers})
+      await axios.delete(`${API_URL}/auth/login/${id}`,{headers})
       fetchUrls()
 
     }catch(err){
@@ -68,7 +69,7 @@ function Dashboard() {
     }
   }
   const handleCopy = (shortCode) => {
-  navigator.clipboard.writeText(`http://localhost:5000/${shortCode}`)
+  navigator.clipboard.writeText(`${API_URL}/auth/login/${shortCode}`)
   alert('Copied to clipboard!')
 }
 const handleQR = (shortCode) => {
@@ -165,12 +166,12 @@ const handleQR = (shortCode) => {
               <div key={url._id} style={styles.urlCard}>
     <div style={styles.urlInfo}>
       <a
-        href={`http://localhost:5000/${url.shortCode}`}
+        href={`${API_URL}/auth/login/${url.shortCode}`}
         target="_blank"
         rel="noreferrer"
         style={styles.shortUrl}
       >
-        http://localhost:5000/{url.shortCode}
+        ${API_URL}/auth/login/{url.shortCode}
       </a>
       <p style={styles.originalUrl}>{url.originalUrl}</p>
       <p style={styles.expiry}>{getDaysLeft(url.expiresAt)}</p>
@@ -192,7 +193,7 @@ const handleQR = (shortCode) => {
       {qrCode === url.shortCode && (
   <div style={{ marginTop: '10px' }}>
     <QRCodeSVG
-      value={`http://localhost:5000/${url.shortCode}`}
+      value={`${API_URL}/auth/login/${url.shortCode}`}
       size={120}
     />
   </div>

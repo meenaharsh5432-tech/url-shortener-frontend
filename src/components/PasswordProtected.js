@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import axios from 'axios'
 import { useParams } from 'react-router-dom'
+import API_URL from '../config'
 
 function PasswordProtected() {
   const { code } = useParams()
@@ -12,7 +13,7 @@ function PasswordProtected() {
     setLoading(true)
     setError('')
     try {
-      const res = await axios.post(`http://localhost:5000/verify/${code}`, {
+      const res = await axios.post(`${API_URL}/auth/login/verify/${code}`, {
         password
       })
       // Redirect to original URL
