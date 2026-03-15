@@ -12,7 +12,7 @@ function PasswordProtected() {
     setLoading(true)
     setError('')
     try {
-      const res = await axios.post(`https://url-shortener-backend-9agq.onrender.com/verify/${code}`, {
+      const res = await axios.post(`https://api.cuts.ink/verify/${code}`, {
         password
       })
       window.location.href = res.data.originalUrl

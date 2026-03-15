@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import API_URL from '../config'
 
-const BACKEND_URL = 'https://url-shortener-backend-9agq.onrender.com'
+const BACKEND_URL = 'https://api.cuts.ink'
 
 function Dashboard() {
   const [urls, setUrls] = useState([])
