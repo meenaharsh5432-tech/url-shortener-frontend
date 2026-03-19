@@ -36,6 +36,7 @@ function Register() {
       })
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('username', res.data.user.username)
+      localStorage.setItem('isGoogleUser', res.data.user.isGoogleUser ? 'true' : 'false')
       navigate('/dashboard')
     } catch (err) {
       setError('Google sign in failed')

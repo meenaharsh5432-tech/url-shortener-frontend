@@ -27,6 +27,7 @@ function Dashboard() {
 
   const token = localStorage.getItem('token')
   const username = localStorage.getItem('username')
+  const isGoogleUser = localStorage.getItem('isGoogleUser') === 'true'
   const headers = { Authorization: `Bearer ${token}` }
 
   const chartData = urls.map((url) => ({
@@ -102,7 +103,8 @@ function Dashboard() {
       setNewPw('')
       setConfirmPw('')
       setShowChangePw(false)
-      showToast('Password changed!')
+      localStorage.setItem('isGoogleUser', 'false')
+      showToast(isGoogleUser ? 'Password set!' : 'Password changed!')
     } catch (err) {
       setPwError(err.response?.data?.error || 'Failed to change password')
     }
@@ -302,21 +304,28 @@ function Dashboard() {
           )}
         </div>
 
-        {/* Change Password */}
+        {/* Change / Set Password */}
         <div style={styles.card}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <h2 style={styles.cardTitle}>Change Password</h2>
+            <h2 style={styles.cardTitle}>{isGoogleUser ? 'Set Password' : 'Change Password'}</h2>
             <button
               style={styles.toggleBtn}
               onClick={() => { setShowChangePw(!showChangePw); setPwError('') }}
             >
-              {showChangePw ? 'Cancel' : 'Change'}
+              {showChangePw ? 'Cancel' : isGoogleUser ? 'Set' : 'Change'}
             </button>
           </div>
+          {isGoogleUser && !showChangePw && (
+            <p style={{ color: '#6b7280', fontSize: '13px', margin: '8px 0 0 0' }}>
+              Your account uses Google Sign In. You can set a password to also log in with email.
+            </p>
+          )}
           {showChangePw && (
             <div style={{ marginTop: '16px' }}>
               {pwError && <div style={styles.errorBox}>⚠️ {pwError}</div>}
-              <input style={{ ...styles.input, marginBottom: '10px' }} type="password" placeholder="Current password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} />
+              {!isGoogleUser && (
+                <input style={{ ...styles.input, marginBottom: '10px' }} type="password" placeholder="Current password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} />
+              )}
               <input style={{ ...styles.input, marginBottom: '10px' }} type="password" placeholder="New password" value={newPw} onChange={e => setNewPw(e.target.value)} />
               <input style={{ ...styles.input, marginBottom: '14px' }} type="password" placeholder="Confirm new password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} />
               <button
@@ -325,7 +334,7 @@ function Dashboard() {
                 onClick={handleChangePassword}
                 disabled={pwLoading}
               >
-                {pwLoading ? 'Saving…' : 'Update Password'}
+                {pwLoading ? 'Saving…' : isGoogleUser ? 'Set Password' : 'Update Password'}
               </button>
             </div>
           )}
