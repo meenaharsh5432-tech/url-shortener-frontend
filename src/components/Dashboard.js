@@ -25,9 +25,9 @@ function Dashboard() {
   const toastTimer = useRef(null)
   const navigate = useNavigate()
 
+  const [isGoogleUser, setIsGoogleUser] = useState(false)
   const token = localStorage.getItem('token')
   const username = localStorage.getItem('username')
-  const isGoogleUser = localStorage.getItem('isGoogleUser') === 'true'
   const headers = { Authorization: `Bearer ${token}` }
 
   const chartData = urls.map((url) => ({
@@ -35,7 +35,12 @@ function Dashboard() {
     clicks: url.clicks
   }))
 
-  useEffect(() => { fetchUrls() }, [])
+  useEffect(() => {
+    fetchUrls()
+    axios.get(`${API_URL}/auth/me`, { headers }).then(res => {
+      setIsGoogleUser(res.data.isGoogleUser)
+    }).catch(() => {})
+  }, [])
 
   const fetchUrls = async () => {
     try {
@@ -103,7 +108,7 @@ function Dashboard() {
       setNewPw('')
       setConfirmPw('')
       setShowChangePw(false)
-      localStorage.setItem('isGoogleUser', 'false')
+      setIsGoogleUser(false)
       showToast(isGoogleUser ? 'Password set!' : 'Password changed!')
     } catch (err) {
       setPwError(err.response?.data?.error || 'Failed to change password')
