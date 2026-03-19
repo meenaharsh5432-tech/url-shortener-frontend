@@ -9,15 +9,20 @@ function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const handleRegister = async () => {
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       await axios.post(`${API_URL}/auth/register`, { username, email, password })
-      navigate('/login')
+      setSuccess('Account created! Please check your email and click the verification link before logging in.')
+      setUsername('')
+      setEmail('')
+      setPassword('')
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed')
     }
@@ -54,6 +59,12 @@ function Register() {
         {error && (
           <div style={styles.errorBox}>
             <span>⚠️ {error}</span>
+          </div>
+        )}
+
+        {success && (
+          <div style={styles.successBox}>
+            <span>{success}</span>
           </div>
         )}
 
@@ -179,6 +190,13 @@ const styles = {
     border: '1px solid rgba(239,68,68,0.28)',
     borderRadius: '10px', padding: '11px 14px',
     color: '#f87171', fontSize: '13px',
+    marginBottom: '18px'
+  },
+  successBox: {
+    backgroundColor: 'rgba(34,197,94,0.08)',
+    border: '1px solid rgba(34,197,94,0.28)',
+    borderRadius: '10px', padding: '11px 14px',
+    color: '#4ade80', fontSize: '13px',
     marginBottom: '18px'
   },
   googleWrapper: {

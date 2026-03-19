@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google'
 import API_URL from '../config'
 
@@ -8,8 +8,20 @@ function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  useEffect(() => {
+    if (searchParams.get('verified') === 'true') {
+      setSuccess('Email verified! You can now log in.')
+    } else if (searchParams.get('error') === 'invalid-or-expired-link') {
+      setError('Verification link is invalid or expired. Please register again.')
+    } else if (searchParams.get('error')) {
+      setError('Something went wrong. Please try again.')
+    }
+  }, [searchParams])
 
   const handleLogin = async () => {
     setLoading(true)
@@ -55,6 +67,12 @@ function Login() {
         {error && (
           <div style={styles.errorBox}>
             <span>⚠️ {error}</span>
+          </div>
+        )}
+
+        {success && (
+          <div style={styles.successBox}>
+            <span>{success}</span>
           </div>
         )}
 
@@ -170,6 +188,13 @@ const styles = {
     border: '1px solid rgba(239,68,68,0.28)',
     borderRadius: '10px', padding: '11px 14px',
     color: '#f87171', fontSize: '13px',
+    marginBottom: '18px'
+  },
+  successBox: {
+    backgroundColor: 'rgba(34,197,94,0.08)',
+    border: '1px solid rgba(34,197,94,0.28)',
+    borderRadius: '10px', padding: '11px 14px',
+    color: '#4ade80', fontSize: '13px',
     marginBottom: '18px'
   },
   googleWrapper: {
