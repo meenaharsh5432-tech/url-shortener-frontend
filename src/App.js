@@ -4,6 +4,8 @@ import Login from './components/Login'
 import Register from './components/Register'
 import Dashboard from './components/Dashboard'
 import PasswordProtected from './components/PasswordProtected'
+import ForgotPassword from './components/ForgotPassword'
+import ResetPassword from './components/ResetPassword'
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('token')
@@ -25,6 +27,8 @@ function App() {
           }
         />
         <Route path="/protected/:code" element={<PasswordProtected />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>

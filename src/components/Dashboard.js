@@ -16,6 +16,12 @@ function Dashboard() {
   const [qrCode, setQrCode] = useState(null)
   const [password, setPassword] = useState('')
   const [toast, setToast] = useState('')
+  const [showChangePw, setShowChangePw] = useState(false)
+  const [currentPw, setCurrentPw] = useState('')
+  const [newPw, setNewPw] = useState('')
+  const [confirmPw, setConfirmPw] = useState('')
+  const [pwError, setPwError] = useState('')
+  const [pwLoading, setPwLoading] = useState(false)
   const toastTimer = useRef(null)
   const navigate = useNavigate()
 
@@ -82,6 +88,25 @@ function Dashboard() {
     localStorage.removeItem('token')
     localStorage.removeItem('username')
     navigate('/login')
+  }
+
+  const handleChangePassword = async () => {
+    if (!currentPw || !newPw || !confirmPw) return setPwError('All fields are required')
+    if (newPw !== confirmPw) return setPwError('New passwords do not match')
+    if (newPw.length < 6) return setPwError('Password must be at least 6 characters')
+    setPwLoading(true)
+    setPwError('')
+    try {
+      await axios.post(`${API_URL}/auth/change-password`, { currentPassword: currentPw, newPassword: newPw }, { headers })
+      setCurrentPw('')
+      setNewPw('')
+      setConfirmPw('')
+      setShowChangePw(false)
+      showToast('Password changed!')
+    } catch (err) {
+      setPwError(err.response?.data?.error || 'Failed to change password')
+    }
+    setPwLoading(false)
   }
 
   const showToast = (msg) => {
@@ -276,6 +301,36 @@ function Dashboard() {
             })
           )}
         </div>
+
+        {/* Change Password */}
+        <div style={styles.card}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h2 style={styles.cardTitle}>Change Password</h2>
+            <button
+              style={styles.toggleBtn}
+              onClick={() => { setShowChangePw(!showChangePw); setPwError('') }}
+            >
+              {showChangePw ? 'Cancel' : 'Change'}
+            </button>
+          </div>
+          {showChangePw && (
+            <div style={{ marginTop: '16px' }}>
+              {pwError && <div style={styles.errorBox}>⚠️ {pwError}</div>}
+              <input style={{ ...styles.input, marginBottom: '10px' }} type="password" placeholder="Current password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} />
+              <input style={{ ...styles.input, marginBottom: '10px' }} type="password" placeholder="New password" value={newPw} onChange={e => setNewPw(e.target.value)} />
+              <input style={{ ...styles.input, marginBottom: '14px' }} type="password" placeholder="Confirm new password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} />
+              <button
+                className="btn-primary"
+                style={{ ...styles.shortenBtn, opacity: pwLoading ? 0.65 : 1 }}
+                onClick={handleChangePassword}
+                disabled={pwLoading}
+              >
+                {pwLoading ? 'Saving…' : 'Update Password'}
+              </button>
+            </div>
+          )}
+        </div>
+
       </div>
 
       <footer style={styles.footer}>
@@ -452,6 +507,11 @@ const styles = {
   deleteBtn: {
     backgroundColor: 'rgba(239,68,68,0.08)',
     borderColor: 'rgba(239,68,68,0.18)'
+  },
+  toggleBtn: {
+    padding: '6px 14px', backgroundColor: 'transparent',
+    color: '#818cf8', border: '1px solid rgba(129,140,248,0.3)',
+    borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500'
   },
   footer: {
     textAlign: 'center',
