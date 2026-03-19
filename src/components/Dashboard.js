@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { useNavigate } from 'react-router-dom'
@@ -15,6 +15,8 @@ function Dashboard() {
   const [error, setError] = useState('')
   const [qrCode, setQrCode] = useState(null)
   const [password, setPassword] = useState('')
+  const [toast, setToast] = useState('')
+  const toastTimer = useRef(null)
   const navigate = useNavigate()
 
   const token = localStorage.getItem('token')
@@ -50,6 +52,7 @@ function Dashboard() {
       setCustomAlias('')
       setPassword('')
       fetchUrls()
+      showToast('Link shortened!')
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to shorten URL')
     }
@@ -60,6 +63,7 @@ function Dashboard() {
     try {
       await axios.delete(`${API_URL}/${id}`, { headers })
       fetchUrls()
+      showToast('Link deleted')
     } catch (err) {
       console.log('Error deleting URL')
     }
@@ -67,7 +71,7 @@ function Dashboard() {
 
   const handleCopy = (shortCode) => {
     navigator.clipboard.writeText(`${BACKEND_URL}/${shortCode}`)
-    alert('✅ Copied to clipboard!')
+    showToast('Copied to clipboard!')
   }
 
   const handleQR = (shortCode) => {
@@ -80,6 +84,12 @@ function Dashboard() {
     navigate('/login')
   }
 
+  const showToast = (msg) => {
+    setToast(msg)
+    clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => setToast(''), 2400)
+  }
+
   const getDaysLeft = (expiresAt) => {
     const diff = Math.ceil((new Date(expiresAt) - new Date()) / (1000 * 60 * 60 * 24))
     if (diff <= 0) return { text: 'Expired', color: '#ef4444' }
@@ -89,19 +99,21 @@ function Dashboard() {
 
   return (
     <div style={styles.container}>
-      {/* Background */}
       <div style={styles.bgOrb1} />
       <div style={styles.bgOrb2} />
 
+      {/* Toast */}
+      <div className={`toast${toast ? ' show' : ''}`}>✓ {toast}</div>
+
       {/* Navbar */}
-      <nav style={styles.navbar}>
+      <nav className="navbar">
         <div style={styles.navLogo}>
           <span style={styles.navLogoIcon}>✂️</span>
           <span style={styles.navLogoText}>cuts.ink</span>
         </div>
         <div style={styles.navRight}>
-          <div style={styles.userBadge}>👤 {username}</div>
-          <button style={styles.logoutBtn} onClick={handleLogout}>Logout</button>
+          <div className="nav-username" style={styles.userBadge}>👤 {username}</div>
+          <button className="logout-btn" style={styles.logoutBtn} onClick={handleLogout}>Logout</button>
         </div>
       </nav>
 
@@ -109,32 +121,34 @@ function Dashboard() {
       <div style={styles.main}>
 
         {/* Stats Row */}
-        <div style={styles.statsRow}>
-          <div style={styles.statCard}>
-            <span style={styles.statNumber}>{urls.length}</span>
-            <span style={styles.statLabel}>Total Links</span>
+        <div className="stats-grid">
+          <div className="stat-card-item" style={styles.statCard}>
+            <span className="stat-number-item" style={styles.statNumber}>{urls.length}</span>
+            <span className="stat-label-item" style={styles.statLabel}>Total Links</span>
           </div>
-          <div style={styles.statCard}>
-            <span style={styles.statNumber}>{urls.reduce((a, b) => a + b.clicks, 0)}</span>
-            <span style={styles.statLabel}>Total Clicks</span>
+          <div className="stat-card-item" style={styles.statCard}>
+            <span className="stat-number-item" style={styles.statNumber}>{urls.reduce((a, b) => a + b.clicks, 0)}</span>
+            <span className="stat-label-item" style={styles.statLabel}>Total Clicks</span>
           </div>
-          <div style={styles.statCard}>
-            <span style={styles.statNumber}>{urls.filter(u => u.password).length}</span>
-            <span style={styles.statLabel}>Protected</span>
+          <div className="stat-card-item" style={styles.statCard}>
+            <span className="stat-number-item" style={styles.statNumber}>{urls.filter(u => u.password).length}</span>
+            <span className="stat-label-item" style={styles.statLabel}>Protected</span>
           </div>
         </div>
 
         {/* Shorten Card */}
         <div style={styles.card}>
-          <h2 style={styles.cardTitle}>✂️ Shorten a URL</h2>
+          <h2 style={styles.cardTitle}>Shorten a URL</h2>
           {error && <div style={styles.errorBox}>⚠️ {error}</div>}
-          <div style={styles.inputGrid}>
+          <div className="input-grid">
             <input
-              style={{ ...styles.input, gridColumn: '1 / -1' }}
+              className="input-full"
+              style={styles.input}
               type="text"
-              placeholder="Paste your long URL here..."
+              placeholder="Paste your long URL here…"
               value={originalUrl}
               onChange={(e) => setOriginalUrl(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleShorten()}
             />
             <input
               style={styles.input}
@@ -146,46 +160,48 @@ function Dashboard() {
             <input
               style={styles.input}
               type="password"
-              placeholder="Password (optional)"
+              placeholder="Password protect (optional)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
           <button
-            style={{ ...styles.shortenBtn, opacity: loading ? 0.7 : 1 }}
+            className="btn-primary"
+            style={{ ...styles.shortenBtn, opacity: loading ? 0.65 : 1 }}
             onClick={handleShorten}
             disabled={loading}
           >
-            {loading ? '⏳ Shortening...' : '✂️ Shorten URL'}
+            {loading ? 'Shortening…' : '✂️ Shorten URL'}
           </button>
         </div>
 
         {/* Chart */}
         {urls.length > 0 && (
           <div style={styles.card}>
-            <h2 style={styles.cardTitle}>📊 Click Analytics</h2>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={chartData}>
-                <XAxis dataKey="name" stroke="#4b5563" tick={{ fill: '#9ca3af', fontSize: 12 }} />
-                <YAxis stroke="#4b5563" tick={{ fill: '#9ca3af', fontSize: 12 }} />
+            <h2 style={styles.cardTitle}>Click Analytics</h2>
+            <ResponsiveContainer width="100%" height={210}>
+              <BarChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <XAxis dataKey="name" stroke="#2d2d3d" tick={{ fill: '#6b7280', fontSize: 11 }} />
+                <YAxis stroke="#2d2d3d" tick={{ fill: '#6b7280', fontSize: 11 }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#1e1e2e',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '8px',
-                    color: '#fff'
+                    backgroundColor: '#1a1a28',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '10px',
+                    color: '#fff',
+                    fontSize: '13px'
                   }}
                   labelStyle={{ color: '#9ca3af' }}
-  itemStyle={{ color: '#8b5cf6' }}
-  cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                  itemStyle={{ color: '#a78bfa' }}
+                  cursor={{ fill: 'rgba(255,255,255,0.02)' }}
                 />
-                <Bar dataKey="clicks" fill="url(#barGradient)" radius={[6, 6, 0, 0]} />
                 <defs>
                   <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#8b5cf6" />
-                    <stop offset="100%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0.7} />
                   </linearGradient>
                 </defs>
+                <Bar dataKey="clicks" fill="url(#barGradient)" radius={[5, 5, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -193,17 +209,17 @@ function Dashboard() {
 
         {/* URLs List */}
         <div style={styles.card}>
-          <h2 style={styles.cardTitle}>🔗 My Links ({urls.length})</h2>
+          <h2 style={styles.cardTitle}>My Links <span style={styles.countBadge}>{urls.length}</span></h2>
           {urls.length === 0 ? (
             <div style={styles.emptyState}>
-              <div style={styles.emptyIcon}>✂️</div>
+              <div style={styles.emptyIconWrap}>✂️</div>
               <p style={styles.emptyText}>No links yet. Shorten your first URL above!</p>
             </div>
           ) : (
             urls.map((url) => {
               const expiry = getDaysLeft(url.expiresAt)
               return (
-                <div key={url._id} style={styles.urlCard}>
+                <div key={url._id} className="url-card-item url-card-layout">
                   <div style={styles.urlMain}>
                     <div style={styles.urlTopRow}>
                       <a
@@ -218,7 +234,7 @@ function Dashboard() {
                         {url.password && (
                           <span style={styles.badge}>🔒 Protected</span>
                         )}
-                        <span style={{ ...styles.badge, color: expiry.color, borderColor: expiry.color }}>
+                        <span style={{ ...styles.badge, color: expiry.color, borderColor: expiry.color + '55' }}>
                           {expiry.text}
                         </span>
                       </div>
@@ -227,32 +243,32 @@ function Dashboard() {
                     <div style={styles.statsRow2}>
                       <span style={styles.statChip}>🖥️ {url.deviceStats?.desktop || 0}</span>
                       <span style={styles.statChip}>📱 {url.deviceStats?.mobile || 0}</span>
-                      <span style={styles.statChip}>
-                        🌍 {url.geoStats && Object.keys(url.geoStats).length > 0
-                          ? Object.entries(url.geoStats).map(([c, n]) => `${c}:${n}`).join(' ')
-                          : 'No data'}
-                      </span>
+                      {url.geoStats && Object.keys(url.geoStats).length > 0 && (
+                        <span style={styles.statChip}>
+                          🌍 {Object.entries(url.geoStats).map(([c, n]) => `${c} ${n}`).join(', ')}
+                        </span>
+                      )}
                     </div>
                     {qrCode === url.shortCode && (
                       <div style={styles.qrBox}>
                         <QRCodeSVG
                           value={`${BACKEND_URL}/${url.shortCode}`}
-                          size={120}
+                          size={110}
                           bgColor="transparent"
                           fgColor="#ffffff"
                         />
                       </div>
                     )}
                   </div>
-                  <div style={styles.urlRight}>
+                  <div className="url-right">
                     <div style={styles.clickBadge}>
                       <span style={styles.clickNum}>{url.clicks}</span>
                       <span style={styles.clickLbl}>clicks</span>
                     </div>
                     <div style={styles.btnGroup}>
-                      <button style={styles.iconBtn} onClick={() => handleCopy(url.shortCode)} title="Copy">📋</button>
-                      <button style={styles.iconBtn} onClick={() => handleQR(url.shortCode)} title="QR Code">📱</button>
-                      <button style={{ ...styles.iconBtn, ...styles.deleteBtn }} onClick={() => handleDelete(url._id)} title="Delete">🗑️</button>
+                      <button className="icon-btn" style={styles.iconBtn} onClick={() => handleCopy(url.shortCode)} title="Copy link">📋</button>
+                      <button className="icon-btn" style={styles.iconBtn} onClick={() => handleQR(url.shortCode)} title="QR Code">📱</button>
+                      <button className="icon-btn" style={{ ...styles.iconBtn, ...styles.deleteBtn }} onClick={() => handleDelete(url._id)} title="Delete">🗑️</button>
                     </div>
                   </div>
                 </div>
@@ -261,12 +277,12 @@ function Dashboard() {
           )}
         </div>
       </div>
-      {/* Footer */}
-<footer style={styles.footer}>
-  <p style={styles.footerText}>
-    © {new Date().getFullYear()} cuts.ink — Made  by <span style={styles.footerName}>Harsh</span>
-  </p>
-</footer>
+
+      <footer style={styles.footer}>
+        <p style={styles.footerText}>
+          © {new Date().getFullYear()} cuts.ink — Made by <span style={styles.footerName}>Harsh</span>
+        </p>
+      </footer>
     </div>
   )
 }
@@ -275,7 +291,6 @@ const styles = {
   container: {
     minHeight: '100vh',
     backgroundColor: '#0a0a0f',
-    fontFamily: "'Georgia', serif",
     position: 'relative',
     overflow: 'hidden'
   },
@@ -283,7 +298,7 @@ const styles = {
     position: 'fixed',
     width: '600px', height: '600px',
     borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)',
+    background: 'radial-gradient(circle, rgba(99,102,241,0.09) 0%, transparent 70%)',
     top: '-200px', left: '-200px',
     pointerEvents: 'none', zIndex: 0
   },
@@ -291,98 +306,98 @@ const styles = {
     position: 'fixed',
     width: '500px', height: '500px',
     borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(168,85,247,0.06) 0%, transparent 70%)',
+    background: 'radial-gradient(circle, rgba(168,85,247,0.07) 0%, transparent 70%)',
     bottom: '-200px', right: '-200px',
     pointerEvents: 'none', zIndex: 0
   },
-  navbar: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    padding: '16px 24px',
-    backgroundColor: 'rgba(19,19,26,0.9)',
-    backdropFilter: 'blur(10px)',
-    borderBottom: '1px solid rgba(255,255,255,0.06)',
-    position: 'sticky', top: 0, zIndex: 100
-  },
   navLogo: { display: 'flex', alignItems: 'center', gap: '10px' },
-  navLogoIcon: { fontSize: '20px' },
-  navLogoText: { color: '#fff', fontSize: '18px', fontWeight: 'bold', letterSpacing: '-0.5px' },
-  navRight: { display: 'flex', alignItems: 'center', gap: '12px' },
+  navLogoIcon: { fontSize: '19px' },
+  navLogoText: { color: '#fff', fontSize: '17px', fontWeight: '700', letterSpacing: '-0.5px' },
+  navRight: { display: 'flex', alignItems: 'center', gap: '10px' },
   userBadge: {
-    color: '#9ca3af', fontSize: '14px',
+    color: '#9ca3af', fontSize: '13px',
     backgroundColor: 'rgba(255,255,255,0.05)',
-    padding: '6px 12px', borderRadius: '20px',
-    border: '1px solid rgba(255,255,255,0.08)'
+    padding: '5px 12px', borderRadius: '20px',
+    border: '1px solid rgba(255,255,255,0.07)'
   },
   logoutBtn: {
-    padding: '8px 16px',
+    padding: '7px 15px',
     backgroundColor: 'transparent',
     color: '#9ca3af',
     border: '1px solid rgba(255,255,255,0.1)',
     borderRadius: '8px', cursor: 'pointer',
-    fontSize: '14px', transition: 'all 0.2s'
+    fontSize: '13px', fontWeight: '500'
   },
   main: {
     maxWidth: '860px', margin: '0 auto',
-    padding: '24px 16px', position: 'relative', zIndex: 1
-  },
-  statsRow: {
-    display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '12px', marginBottom: '20px'
+    padding: '24px 16px 0 16px', position: 'relative', zIndex: 1
   },
   statCard: {
     backgroundColor: '#13131a',
     border: '1px solid rgba(255,255,255,0.06)',
-    borderRadius: '14px', padding: '20px',
-    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px'
+    borderRadius: '14px', padding: '20px 16px',
+    display: 'flex', flexDirection: 'column',
+    alignItems: 'center', gap: '4px'
   },
-  statNumber: { color: '#fff', fontSize: '28px', fontWeight: 'bold' },
-  statLabel: { color: '#6b7280', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' },
+  statNumber: {
+    color: '#fff', fontSize: '26px',
+    fontWeight: '700', letterSpacing: '-0.5px'
+  },
+  statLabel: {
+    color: '#6b7280', fontSize: '11px',
+    textTransform: 'uppercase', letterSpacing: '0.6px',
+    fontWeight: '500'
+  },
   card: {
     backgroundColor: '#13131a',
     border: '1px solid rgba(255,255,255,0.06)',
-    borderRadius: '16px', padding: '24px',
+    borderRadius: '16px', padding: '22px',
     marginBottom: '16px',
-    boxShadow: '0 4px 24px rgba(0,0,0,0.3)'
+    boxShadow: '0 2px 20px rgba(0,0,0,0.25)'
   },
   cardTitle: {
-    color: '#fff', fontSize: '16px', fontWeight: '600',
-    margin: '0 0 20px 0', letterSpacing: '-0.3px'
+    color: '#e5e7eb', fontSize: '15px', fontWeight: '600',
+    margin: '0 0 18px 0', letterSpacing: '-0.2px',
+    display: 'flex', alignItems: 'center', gap: '8px'
+  },
+  countBadge: {
+    fontSize: '12px', fontWeight: '600',
+    color: '#8b5cf6',
+    backgroundColor: 'rgba(139,92,246,0.12)',
+    padding: '2px 8px', borderRadius: '20px',
+    border: '1px solid rgba(139,92,246,0.2)'
   },
   errorBox: {
-    backgroundColor: 'rgba(239,68,68,0.1)',
-    border: '1px solid rgba(239,68,68,0.3)',
-    borderRadius: '10px', padding: '12px 16px',
-    color: '#f87171', fontSize: '14px', marginBottom: '16px'
-  },
-  inputGrid: {
-    display: 'grid', gridTemplateColumns: '1fr 1fr',
-    gap: '10px', marginBottom: '14px'
+    backgroundColor: 'rgba(239,68,68,0.08)',
+    border: '1px solid rgba(239,68,68,0.28)',
+    borderRadius: '10px', padding: '11px 14px',
+    color: '#f87171', fontSize: '13px', marginBottom: '14px'
   },
   input: {
-    padding: '12px 14px',
-    backgroundColor: '#1e1e2e',
+    padding: '11px 13px',
+    backgroundColor: '#1a1a28',
     border: '1px solid rgba(255,255,255,0.08)',
     borderRadius: '10px', color: '#ffffff',
     fontSize: '14px', outline: 'none',
-    boxSizing: 'border-box', width: '100%'
+    boxSizing: 'border-box', width: '100%',
+    transition: 'border-color 0.2s, box-shadow 0.2s'
   },
   shortenBtn: {
-    width: '100%', padding: '13px',
+    width: '100%', padding: '12px',
     background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
     color: 'white', border: 'none', borderRadius: '10px',
-    fontSize: '15px', fontWeight: '600', cursor: 'pointer',
-    boxShadow: '0 4px 20px rgba(99,102,241,0.35)'
+    fontSize: '14px', fontWeight: '600', cursor: 'pointer',
+    boxShadow: '0 4px 18px rgba(99,102,241,0.32)',
+    letterSpacing: '0.2px'
   },
   emptyState: {
     textAlign: 'center', padding: '40px 20px'
   },
-  emptyIcon: { fontSize: '40px', marginBottom: '12px' },
-  emptyText: { color: '#6b7280', fontSize: '15px' },
-  urlCard: {
-    display: 'flex', justifyContent: 'space-between',
-    alignItems: 'flex-start', gap: '16px',
-    padding: '16px 0',
-    borderBottom: '1px solid rgba(255,255,255,0.05)'
+  emptyIconWrap: {
+    fontSize: '36px', marginBottom: '12px'
+  },
+  emptyText: {
+    color: '#4b5563', fontSize: '14px', fontWeight: '400'
   },
   urlMain: { flex: 1, minWidth: 0 },
   urlTopRow: {
@@ -391,71 +406,67 @@ const styles = {
   },
   shortUrl: {
     color: '#818cf8', fontWeight: '600',
-    fontSize: '14px', textDecoration: 'none',
+    fontSize: '13px', textDecoration: 'none',
     wordBreak: 'break-all'
   },
-  badges: { display: 'flex', gap: '6px', flexWrap: 'wrap' },
+  badges: { display: 'flex', gap: '5px', flexWrap: 'wrap' },
   badge: {
     fontSize: '11px', padding: '2px 8px',
-    borderRadius: '20px', border: '1px solid rgba(255,255,255,0.15)',
-    color: '#9ca3af'
+    borderRadius: '20px', border: '1px solid rgba(255,255,255,0.12)',
+    color: '#9ca3af', fontWeight: '500'
   },
   originalUrl: {
-    color: '#4b5563', fontSize: '12px',
+    color: '#374151', fontSize: '12px',
     margin: '4px 0 8px 0', wordBreak: 'break-all'
   },
-  statsRow2: { display: 'flex', gap: '8px', flexWrap: 'wrap' },
+  statsRow2: { display: 'flex', gap: '6px', flexWrap: 'wrap' },
   statChip: {
     fontSize: '11px', color: '#6b7280',
     backgroundColor: 'rgba(255,255,255,0.03)',
     padding: '3px 8px', borderRadius: '6px',
-    border: '1px solid rgba(255,255,255,0.06)'
+    border: '1px solid rgba(255,255,255,0.05)',
+    fontWeight: '500'
   },
   qrBox: {
-    marginTop: '12px', padding: '16px',
-    backgroundColor: '#1e1e2e',
-    borderRadius: '10px', display: 'inline-block'
-  },
-  urlRight: {
-    display: 'flex', flexDirection: 'column',
-    alignItems: 'center', gap: '12px', flexShrink: 0
+    marginTop: '12px', padding: '14px',
+    backgroundColor: '#1a1a28',
+    borderRadius: '12px', display: 'inline-block',
+    border: '1px solid rgba(255,255,255,0.06)'
   },
   clickBadge: {
-    textAlign: 'center', minWidth: '50px'
+    textAlign: 'center', minWidth: '46px'
   },
   clickNum: {
-    display: 'block', fontSize: '24px',
-    fontWeight: 'bold', color: '#8b5cf6'
+    display: 'block', fontSize: '22px',
+    fontWeight: '700', color: '#a78bfa',
+    letterSpacing: '-0.5px'
   },
-  clickLbl: { fontSize: '11px', color: '#6b7280' },
-  btnGroup: { display: 'flex', gap: '6px' },
+  clickLbl: { fontSize: '10px', color: '#6b7280', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.5px' },
+  btnGroup: { display: 'flex', gap: '5px' },
   iconBtn: {
-    padding: '8px', backgroundColor: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    padding: '7px 9px', backgroundColor: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.07)',
     borderRadius: '8px', cursor: 'pointer',
-    fontSize: '14px', transition: 'all 0.2s'
+    fontSize: '13px'
   },
   deleteBtn: {
-    backgroundColor: 'rgba(239,68,68,0.1)',
-    borderColor: 'rgba(239,68,68,0.2)'
+    backgroundColor: 'rgba(239,68,68,0.08)',
+    borderColor: 'rgba(239,68,68,0.18)'
   },
   footer: {
-  textAlign: 'center',
-  padding: '24px',
-  borderTop: '1px solid rgba(255,255,255,0.05)',
-  marginTop: '20px',
-  position: 'relative',
-  zIndex: 1
-},
-footerText: {
-  color: '#4b5563',
-  fontSize: '13px',
-  margin: 0
-},
-footerName: {
-  color: '#8b5cf6',
-  fontWeight: '600'
-}
+    textAlign: 'center',
+    padding: '24px 16px',
+    borderTop: '1px solid rgba(255,255,255,0.04)',
+    marginTop: '8px',
+    position: 'relative',
+    zIndex: 1
+  },
+  footerText: {
+    color: '#374151', fontSize: '12px', margin: 0, fontWeight: '400'
+  },
+  footerName: {
+    color: '#8b5cf6', fontWeight: '600'
+  }
 }
 
 export default Dashboard
