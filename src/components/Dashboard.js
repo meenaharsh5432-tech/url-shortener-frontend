@@ -97,7 +97,8 @@ function Dashboard() {
   }
 
   const handleChangePassword = async () => {
-    if (!currentPw || !newPw || !confirmPw) return setPwError('All fields are required')
+    if (!isGoogleUser && !currentPw) return setPwError('Current password is required')
+    if (!newPw || !confirmPw) return setPwError('All fields are required')
     if (newPw !== confirmPw) return setPwError('New passwords do not match')
     if (newPw.length < 6) return setPwError('Password must be at least 6 characters')
     setPwLoading(true)
