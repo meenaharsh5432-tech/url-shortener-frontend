@@ -16,6 +16,8 @@ function Login() {
   useEffect(() => {
     if (searchParams.get('verified') === 'true') {
       setSuccess('Email verified! You can now log in.')
+    } else if (searchParams.get('reset') === 'true') {
+      setSuccess('Password reset successfully! You can now log in.')
     } else if (searchParams.get('error') === 'invalid-or-expired-link') {
       setError('Verification link is invalid or expired. Please register again.')
     } else if (searchParams.get('error')) {
@@ -125,6 +127,10 @@ function Login() {
         >
           {loading ? 'Signing in…' : 'Sign In →'}
         </button>
+
+        <p style={styles.footerText}>
+          <Link to="/forgot-password" style={styles.link}>Forgot password?</Link>
+        </p>
 
         <p style={styles.footerText}>
           Don't have an account?{' '}
