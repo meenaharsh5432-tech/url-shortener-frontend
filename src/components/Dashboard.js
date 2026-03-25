@@ -15,6 +15,8 @@ function Dashboard() {
   const [error, setError] = useState('')
   const [qrCode, setQrCode] = useState(null)
   const [password, setPassword] = useState('')
+  const [expiresAt, setExpiresAt] = useState('')
+  const [expiryPreset, setExpiryPreset] = useState('')
   const [toast, setToast] = useState('')
   const [showChangePw, setShowChangePw] = useState(false)
   const [currentPw, setCurrentPw] = useState('')
@@ -51,18 +53,29 @@ function Dashboard() {
     }
   }
 
+  const handleExpiryPreset = (preset) => {
+    setExpiryPreset(preset)
+    if (preset === 'custom') { setExpiresAt(''); return }
+    if (preset === 'never') { setExpiresAt(''); return }
+    const days = preset === '1d' ? 1 : preset === '7d' ? 7 : 30
+    const d = new Date()
+    d.setDate(d.getDate() + days)
+    setExpiresAt(d.toISOString().split('T')[0])
+  }
+
   const handleShorten = async () => {
     if (!originalUrl) return
     setLoading(true)
     setError('')
     try {
-      await axios.post(`${API_URL}/shorten`,
-        { originalUrl, customAlias, password },
-        { headers }
-      )
+      const body = { originalUrl, customAlias, password }
+      if (expiresAt) body.expiresAt = new Date(expiresAt).toISOString()
+      await axios.post(`${API_URL}/shorten`, body, { headers })
       setOriginalUrl('')
       setCustomAlias('')
       setPassword('')
+      setExpiresAt('')
+      setExpiryPreset('')
       fetchUrls()
       showToast('Link shortened!')
     } catch (err) {
@@ -198,6 +211,34 @@ function Dashboard() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+
+          {/* Expiry */}
+          <div style={styles.expiryRow}>
+            <span style={styles.expiryLabel}>Expires:</span>
+            {['1d', '7d', '30d', 'custom', 'never'].map((p) => (
+              <button
+                key={p}
+                style={{
+                  ...styles.presetBtn,
+                  ...(expiryPreset === p ? styles.presetBtnActive : {})
+                }}
+                onClick={() => handleExpiryPreset(p)}
+                type="button"
+              >
+                {p === '1d' ? '1 Day' : p === '7d' ? '7 Days' : p === '30d' ? '30 Days' : p === 'custom' ? 'Custom' : 'Never'}
+              </button>
+            ))}
+          </div>
+          {expiryPreset === 'custom' && (
+            <input
+              style={{ ...styles.input, marginTop: '10px' }}
+              type="date"
+              value={expiresAt}
+              min={new Date().toISOString().split('T')[0]}
+              onChange={(e) => setExpiresAt(e.target.value)}
+            />
+          )}
+
           <button
             className="btn-primary"
             style={{ ...styles.shortenBtn, opacity: loading ? 0.65 : 1 }}
@@ -527,6 +568,26 @@ const styles = {
     padding: '6px 14px', backgroundColor: 'transparent',
     color: '#818cf8', border: '1px solid rgba(129,140,248,0.3)',
     borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500'
+  },
+  expiryRow: {
+    display: 'flex', alignItems: 'center', gap: '8px',
+    marginTop: '12px', flexWrap: 'wrap'
+  },
+  expiryLabel: {
+    color: '#6b7280', fontSize: '13px', fontWeight: '500', marginRight: '2px'
+  },
+  presetBtn: {
+    padding: '5px 12px',
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: '20px', color: '#9ca3af',
+    fontSize: '12px', fontWeight: '500', cursor: 'pointer',
+    transition: 'all 0.15s'
+  },
+  presetBtnActive: {
+    backgroundColor: 'rgba(139,92,246,0.15)',
+    border: '1px solid rgba(139,92,246,0.4)',
+    color: '#a78bfa'
   },
   footer: {
     textAlign: 'center',
