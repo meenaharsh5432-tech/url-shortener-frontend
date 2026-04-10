@@ -107,6 +107,7 @@ function Login() {
               onError={() => setError('Google sign in failed')}
               theme="filled_black"
               shape="pill"
+              width="100%"
               text="signin_with"
             />
           </div>

@@ -224,7 +224,21 @@
 .oauth-wrap {
   display: flex;
   justify-content: center;
+  width: 100%;
   margin-bottom: 1.25rem;
+  padding: 0.35rem;
+  border-radius: 1.2rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.oauth-wrap > div,
+.oauth-wrap iframe {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  border-radius: 999px;
 }
 
 .form-divider {
@@ -315,7 +329,10 @@
 }
 
 .primary-button {
+  display: block;
+  width: 100%;
   padding: 0.98rem 1.15rem;
+  margin-top: 1rem;
   border-radius: 1rem;
   background: linear-gradient(135deg, #ff9465, #ff5f6d 55%, #ff7c4d);
   color: #101827;
@@ -450,6 +467,7 @@
   grid-template-columns: minmax(0, 1.8fr) minmax(19rem, 1fr);
   gap: 1rem;
   margin-bottom: 1rem;
+  align-items: stretch;
 }
 
 .hero-panel,
@@ -462,6 +480,7 @@
 }
 
 .hero-panel {
+  height: 100%;
   padding: 1.6rem;
   border-radius: 1.7rem;
 }
@@ -511,6 +530,8 @@
 
 .hero-sidecard {
   display: grid;
+  height: 100%;
+  align-content: start;
   gap: 1rem;
   padding: 1.45rem;
   border-radius: 1.7rem;
@@ -565,9 +586,14 @@
 .metrics-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-bottom: 1rem;
+  align-items: stretch;
 }
 
 .metric-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   padding: 1.2rem;
   border-radius: 1.35rem;
 }
