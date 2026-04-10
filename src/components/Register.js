@@ -97,7 +97,7 @@ function Register() {
               onError={() => setError('Google sign up failed')}
               theme="filled_black"
               shape="pill"
-              width="100%"
+              width="340"
               text="signup_with"
             />
           </div>

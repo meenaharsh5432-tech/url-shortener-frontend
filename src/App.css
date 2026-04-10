@@ -224,21 +224,12 @@
 .oauth-wrap {
   display: flex;
   justify-content: center;
-  width: 100%;
   margin-bottom: 1.25rem;
-  padding: 0.35rem;
-  border-radius: 1.2rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  overflow: hidden;
 }
 
 .oauth-wrap > div,
 .oauth-wrap iframe {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 100% !important;
-  border-radius: 999px;
+  max-width: 100%;
 }
 
 .form-divider {
