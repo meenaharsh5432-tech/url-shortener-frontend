@@ -618,14 +618,17 @@
 .dashboard-content-grid {
   grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.85fr);
   align-items: start;
+  gap: 1.2rem;
 }
 
 .dashboard-stack {
   display: grid;
   gap: 1rem;
+  align-content: start;
 }
 
 .dashboard-card {
+  width: 100%;
   padding: 1.35rem;
   border-radius: 1.45rem;
 }
@@ -942,6 +945,10 @@
   .dashboard-form-grid,
   .mini-stat-row {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-content-grid {
+    gap: 1rem;
   }
 
   .dashboard-form-grid .span-2 {
